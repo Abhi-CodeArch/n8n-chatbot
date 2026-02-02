@@ -143,7 +143,12 @@ async function sendMessage() {
 
     const data = await res.json();
 
-    const reply = data.reply || data.output || JSON.stringify(data);
+   const reply =
+    data[0]?.reply ||
+    data[0]?.answer ||
+    data.reply ||
+    data.answer ||
+    JSON.stringify(data);
 
     chatBody.innerHTML += `<div class="message bot">${reply}</div>`;
     chatBody.scrollTop = chatBody.scrollHeight;
