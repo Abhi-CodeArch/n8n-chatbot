@@ -1,74 +1,156 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>n8n Chatbot</title>
-  <style>
-    body {
-      font-family: Arial;
-      background:#f4f4f4;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-    }
-    .chatbox {
-      background:white;
-      width:350px;
-      padding:20px;
-      border-radius:8px;
-      box-shadow:0 0 10px rgba(0,0,0,0.1);
-    }
-    #messages {
-      height:300px;
-      overflow-y:auto;
-      border:1px solid #ddd;
-      padding:10px;
-      margin-bottom:10px;
-    }
-    input {
-      width:75%;
-      padding:8px;
-    }
-    button {
-      width:20%;
-      padding:8px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Chatbot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f4f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.chat-container {
+  width: 380px;
+  height: 620px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* HEADER */
+.chat-header {
+  background: linear-gradient(135deg, #040b2c, #0a1242);
+  color: white;
+  padding: 22px;
+}
+
+.chat-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.chat-header p {
+  margin: 5px 0 0;
+  opacity: 0.8;
+}
+
+/* BODY */
+.chat-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #f7f9fc;
+}
+
+/* MESSAGE */
+.message {
+  max-width: 75%;
+  margin-bottom: 14px;
+  padding: 12px 15px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+.bot {
+  background: #e9ecf2;
+  align-self: flex-start;
+}
+
+.user {
+  background: #1aa184;
+  color: white;
+  align-self: flex-end;
+}
+
+/* INPUT */
+.chat-input {
+  display: flex;
+  padding: 12px;
+  border-top: 1px solid #ddd;
+  background: white;
+}
+
+.chat-input input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  padding: 12px;
+}
+
+.send-btn {
+  background: #1aa184;
+  border: none;
+  color: white;
+  padding: 0 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+}
+</style>
 </head>
 
 <body>
 
-<div class="chatbox">
-  <h3>n8n Test Bot</h3>
-  <div id="messages"></div>
+<div class="chat-container">
 
-  <input id="input" placeholder="Type your message..." />
-  <button onclick="send()">Send</button>
+  <div class="chat-header">
+    <h2>Hi there 👋</h2>
+    <p>Start a chat. Let me help you!</p>
+  </div>
+
+  <div id="chatBody" class="chat-body">
+    <div class="message bot">Hello!</div>
+  </div>
+
+  <div class="chat-input">
+    <input id="userInput" placeholder="Type your question..." />
+    <button class="send-btn" onclick="sendMessage()">➤</button>
+  </div>
+
 </div>
 
 <script>
 const WEBHOOK_URL = "https://devabhi3x.app.n8n.cloud/webhook/773de32a-3a74-4092-bdff-151b3541861c/chat";
 
-async function send() {
-  const input = document.getElementById("input");
-  const msg = input.value;
-  if (!msg) return;
+async function sendMessage() {
+  const input = document.getElementById("userInput");
+  const chatBody = document.getElementById("chatBody");
 
-  document.getElementById("messages").innerHTML += 
-    `<div><b>You:</b> ${msg}</div>`;
+  const text = input.value.trim();
+  if (!text) return;
 
+  chatBody.innerHTML += `<div class="message user">${text}</div>`;
   input.value = "";
+  chatBody.scrollTop = chatBody.scrollHeight;
 
-  const res = await fetch(WEBHOOK_URL, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ message: msg })
-  });
+  try {
+    const res = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  document.getElementById("messages").innerHTML += 
-    `<div><b>Bot:</b> ${data.reply || data}</div>`;
+    const reply = data.reply || data.output || JSON.stringify(data);
+
+    chatBody.innerHTML += `<div class="message bot">${reply}</div>`;
+    chatBody.scrollTop = chatBody.scrollHeight;
+
+  } catch (err) {
+    chatBody.innerHTML += `<div class="message bot">⚠️ Server error.</div>`;
+  }
 }
 </script>
 
