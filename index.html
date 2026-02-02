@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>n8n Chatbot</title>
+  <style>
+    body {
+      font-family: Arial;
+      background:#f4f4f4;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+    .chatbox {
+      background:white;
+      width:350px;
+      padding:20px;
+      border-radius:8px;
+      box-shadow:0 0 10px rgba(0,0,0,0.1);
+    }
+    #messages {
+      height:300px;
+      overflow-y:auto;
+      border:1px solid #ddd;
+      padding:10px;
+      margin-bottom:10px;
+    }
+    input {
+      width:75%;
+      padding:8px;
+    }
+    button {
+      width:20%;
+      padding:8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="chatbox">
+  <h3>n8n Test Bot</h3>
+  <div id="messages"></div>
+
+  <input id="input" placeholder="Type your message..." />
+  <button onclick="send()">Send</button>
+</div>
+
+<script>
+const WEBHOOK_URL = "https://devabhi3x.app.n8n.cloud/webhook/773de32a-3a74-4092-bdff-151b3541861c/chat";
+
+async function send() {
+  const input = document.getElementById("input");
+  const msg = input.value;
+  if (!msg) return;
+
+  document.getElementById("messages").innerHTML += 
+    `<div><b>You:</b> ${msg}</div>`;
+
+  input.value = "";
+
+  const res = await fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ message: msg })
+  });
+
+  const data = await res.json();
+
+  document.getElementById("messages").innerHTML += 
+    `<div><b>Bot:</b> ${data.reply || data}</div>`;
+}
+</script>
+
+</body>
+</html>
